@@ -5,8 +5,8 @@ services:
     hostname: minio1
     volumes:
       - /data:/data1
-    ports:
-      - "9000:9000"
+    expose:
+      - "9000"
     environment:
       MINIO_ROOT_USER: kubitre
       MINIO_ROOT_PASSWORD: MyLastSecuritySmokeMazero1998
@@ -25,4 +25,4 @@ services:
       - /vault:/vault/data
     cap_add:
       - IPC_LOCK
-    entrypoint: vault server -config=/vault/config/vault.json
+    entrypoint: vault server
