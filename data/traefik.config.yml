@@ -1,0 +1,40 @@
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false
+
+entryPoints:
+  dashboard:
+    address: :8080
+    auth:
+      basic:
+        users:
+          - "kubitre:$1$MPdJER/m$h5gB16/IkH01m1nxMAUx10"
+  web:
+    address: :80
+    redirect:
+      entryPoint: "webSecure"
+
+  webSecure:
+    address: :443
+
+log:
+  level: "DEBUG"
+  format: "json"
+
+api:
+  entryPoint: "dashboard"
+  dashboard: true
+
+
+acme:
+  email: "admin@kubitre.space"
+  storage: "acme.json"
+  entryPoint: "webSecure"
+  onHostRule: true
+  httpChallenge:
+    entryPoint: "web"
+
+docker:
+  domain: "kubitre.space"
+  watch: true
+  network: "web"

@@ -33,11 +33,27 @@ services:
       - traefik.http.services.my-container-service.loadbalancer.server.port=8200
 
   reverse-proxy:
-    image: traefik:v2.4
-    command: --api.insecure=true --providers.docker
+    image: traefik:v2.3
+    command:
+      - --entrypoints.web.address=:80
+      - --entrypoints.web-secure.address=:443 
+      - --providers.docker=true
+      - --providers.file.directory=/configuration/
+      - --providers.file.watch=true
     ports:
       - "80:80"
       - "443:443"
-      - "8080:8080"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - ./data/traefik.config.yml:/traefik.yml:ro
+      - ./data/acme.json:/acme.json
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.entrypoints=https"
+      - "traefik.http.routers.traefik.rule=Host(`traf.kubitre.space`)"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.tls.certresolver=letsEncrypt"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.services.traefik-traefik.loadbalancer.server.port=888"
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=kubitre:$1$MPdJER/m$h5gB16/IkH01m1nxMAUx10"
+      - "traefik.http.routers.traefik.middlewares=traefik-auth"
