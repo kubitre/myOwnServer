@@ -5,24 +5,39 @@ services:
     hostname: minio1
     volumes:
       - /data:/data1
-    expose:
-      - "9000"
     environment:
       MINIO_ROOT_USER: kubitre
       MINIO_ROOT_PASSWORD: MyLastSecuritySmokeMazero1998
+    expose: 9000
     command: server http://minio/data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
       timeout: 20s
       retries: 3
+    labels:
+      - "traefik.http.routers.whoami.rule=Host(`mins3.kubitre.space`)"
+      - traefik.http.services.my-container-service.loadbalancer.server.port=9000
   
   Vault:
     image: vault
-    ports:
-      - "8200:8200"
     volumes:
       - /vault:/vault/data
     cap_add:
       - IPC_LOCK
+    expose:
+      - 8200
     entrypoint: vault server
+    labels:
+      - traefik.http.routers.whoami.rule=Host(`vault.kubitre.space`)
+      - traefik.http.services.my-container-service.loadbalancer.server.port=8200
+
+  reverse-proxy:
+    image: traefik:v2.4
+    command: --api.insecure=true --providers.docker
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
